@@ -1,0 +1,8 @@
+[package]
+name = "regexm"
+version = "0.1.0"
+authors = ["Takayuki Maeda <takoyaki0316@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+regex = "1"
