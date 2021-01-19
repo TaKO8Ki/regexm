@@ -10,11 +10,15 @@ fn main() {
         _ => println!("default"),
     });
 
-    // let text2 = "foo";
-    // regexm::regexm!(let foo = match text2 {
-    //     r"^\d{4}-\d{2}-\d{2}$" => "ymd",
-    //     r"^\d{4}-\d{2}$" => "ym",
-    //     _ => "default"
-    // });
-    // println!("{}", foo)
+    let text2 = "foo";
+    regexm::regexm!(let foo = match text2 {
+        r"^\d{4}-\d{2}-\d{2}$" => "ymd",
+        r"^\d{4}-\d{2}$" => "ym",
+        r"^\d{4}-\d{2}-\d{2}$" => {
+            "ymd";
+            "ymd"
+        }
+        _ => "default"
+    });
+    println!("{}", foo);
 }
