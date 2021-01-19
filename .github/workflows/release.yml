@@ -1,0 +1,26 @@
+name: Release
+on:
+  push:
+    tags:
+      - 'v*'
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-20.04    
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cargo check
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+
+  release:
+    name: Cargo publish
+    runs-on: ubuntu-20.04
+    needs: check
+    steps:
+      - uses: actions/checkout@v1
+      - run: cargo login ${CRATES_IO_TOKEN}
+        env:
+          CRATES_IO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+      - run: cargo publish
