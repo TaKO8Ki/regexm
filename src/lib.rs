@@ -526,7 +526,7 @@ mod test {
             r"^\d{4}-\d{2}-\d{2}$" => "ymd",
             r"^\d{4}-\d{2}$" => "ym",
             r"^\d{4}$" => "y",
-            _ => "default"
+            _ => "default",
         });
         assert_eq!(foo, "ymd");
     }
@@ -541,7 +541,7 @@ mod test {
             r"^\d{4}-\d{2}$" => {
                 let bar = "ym";
                 bar
-            },
+            }
             _ => "default"
         });
         assert_eq!(foo, "ymd");
@@ -554,7 +554,7 @@ mod test {
             r"^\d{4}-\d{2}$" => {
                 let bar = "ym";
                 bar
-            }
+            },
             _ => "default"
         });
         assert_eq!(foo, "default");
