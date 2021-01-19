@@ -3,6 +3,13 @@ name = "regexm"
 version = "0.1.0-beta.0"
 authors = ["Takayuki Maeda <takoyaki0316@gmail.com>"]
 edition = "2018"
+license = "MIT"
+description = "A Rust macro for writing regex pattern matching."
+homepage = "https://github.com/TaKO8Ki/regexm"
+repository = "https://github.com/TaKO8Ki/regexm"
+documentation = "https://docs.rs/regexm"
+readme = "README.md"
+keywords = ["regex"]
 
 [dependencies]
 regex = "1"
