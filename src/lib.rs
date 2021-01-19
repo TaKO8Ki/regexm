@@ -25,7 +25,7 @@ macro_rules! regexm_parse {
     };
 
     (
-        tokens = [let $var:tt = match $str:tt {$pattern:expr => {$token:expr} $($rest:tt)*}],
+        tokens = [let $var:tt = match $str:tt {$pattern:expr => $token:block $($rest:tt)*}],
     ) => {
         $crate::__regexm_parse! {
             tokens = [$($rest)*],
@@ -326,7 +326,7 @@ macro_rules! __regexm_parse {
 #[cfg(test)]
 mod test {
     #[test]
-    fn test_match() {
+    fn test_match_3_or_more_pattern() {
         regexm!(match "2021-01-01" {
             r"^\d{4}-\d{2}-\d{2}$" => assert!(true),
             r"^\d{4}-\d{2}$" => assert!(false),
@@ -338,33 +338,81 @@ mod test {
             r"^\d{4}-\d{2}$" => assert!(false),
             _ => assert!(true),
         });
+    }
 
+    #[test]
+    fn test_match_3_or_more_pattern_block() {
         regexm!(match "2021-01-01" {
             r"^\d{4}-\d{2}-\d{2}$" => {
                 assert!(true);
                 assert!(true);
             }
-            r"^\d{4}-\d{2}$" => assert!(false),
-            _ => assert!(false),
+            r"^\d{4}-\d{2}$" => {
+                assert!(false);
+                assert!(false);
+            }
+            _ => {
+                assert!(false);
+                assert!(false)
+            }
         });
 
+        regexm!(match "foo" {
+            r"^\d{4}-\d{2}-\d{2}$" => {
+                assert!(false);
+                assert!(false);
+            }
+            r"^\d{4}-\d{2}$" => {
+                assert!(false);
+                assert!(false)
+            }
+            _ => {
+                assert!(true);
+                assert!(true)
+            }
+        });
+    }
+
+    #[test]
+    fn test_match_2_or_less_pattern() {
         regexm!(match "2021-01-01" {
             r"^\d{4}-\d{2}-\d{2}$" => assert!(true),
             _ => assert!(false),
         });
 
-        regexm!(match "2021-01-01" {
+        regexm!(match "foo" {
             r"^\d{4}-\d{2}$" => assert!(false),
-            r"^\d{4}-\d{2}-\d{2}$" => {
-                assert!(true);
-                assert!(true);
-            }
-            _ => assert!(false),
+            _ => assert!(true),
         });
     }
 
     #[test]
-    fn test_let_match() {
+    fn test_match_2_or_less_pattern_block() {
+        regexm!(match "2021-01-01" {
+            r"^\d{4}-\d{2}-\d{2}$" => {
+                assert!(true);
+                assert!(true);
+            }
+            _ => {
+                assert!(false);
+                assert!(false)
+            }
+        });
+
+        regexm!(match "foo" {
+            r"^\d{4}-\d{2}$" => {
+                assert!(false);
+                assert!(false)
+            }
+            _ => {
+                assert!(true);
+                assert!(true);
+            }
+        });
+    }
+
+    #[test]
+    fn test_let_match_3_or_more_pattern() {
         regexm!(let foo = match "2021-01-01" {
             r"^\d{4}-\d{2}-\d{2}$" => "ymd",
             r"^\d{4}-\d{2}$" => "ym",
@@ -378,11 +426,70 @@ mod test {
             _ => "default"
         });
         assert_eq!(foo, "default");
+    }
 
-        regexm!(let bar = match "2021-01-01" {
+    #[test]
+    fn test_let_match_3_or_more_pattern_block() {
+        regexm!(let foo = match "2021-01-01" {
+            r"^\d{4}-\d{2}-\d{2}$" => {
+                let bar = "ymd";
+                bar
+            }
+            r"^\d{4}-\d{2}$" => {
+                let bar = "ym";
+                bar
+            }
+            _ => "default"
+        });
+        assert_eq!(foo, "ymd");
+
+        regexm!(let foo = match "foo" {
+            r"^\d{4}-\d{2}-\d{2}$" => {
+                let bar = "ymd";
+                bar
+            }
+            r"^\d{4}-\d{2}$" => {
+                let bar = "ym";
+                bar
+            }
+            _ => "default"
+        });
+        assert_eq!(foo, "default");
+    }
+
+    #[test]
+    fn test_let_match_2_or_less_pattern() {
+        regexm!(let foo = match "2021-01-01" {
             r"^\d{4}-\d{2}-\d{2}$" => "ymd",
             _ => "default"
         });
-        assert_eq!(bar, "ymd");
+        assert_eq!(foo, "ymd");
+
+        regexm!(let foo = match "foo" {
+            r"^\d{4}-\d{2}$" => "ym",
+            _ => "default"
+        });
+        assert_eq!(foo, "default");
+    }
+
+    #[test]
+    fn test_let_match_2_or_less_pattern_block() {
+        regexm!(let foo = match "2021-01-01" {
+            r"^\d{4}-\d{2}-\d{2}$" => {
+                let bar = "ymd";
+                bar
+            }
+            _ => "default"
+        });
+        assert_eq!(foo, "ymd");
+
+        regexm!(let foo = match "foo" {
+            r"^\d{4}-\d{2}$" => {
+                let bar = "ym";
+                bar
+            }
+            _ => "default"
+        });
+        assert_eq!(foo, "default");
     }
 }
