@@ -1,20 +1,9 @@
 #[macro_export]
 macro_rules! regexm {
-    ($($tokens:tt)*) => {
-        $crate::regexm_parse! {
-            tokens = [$($tokens)*],
-        }
-    };
-}
-
-#[macro_export]
-#[doc(hidden)]
-macro_rules! regexm_parse {
-    // let match
     (
-        tokens = [let $var:tt = match $str:tt {$pattern:expr => $token:expr, $($rest:tt)*}],
+        let $var:tt = match $str:tt {$pattern:expr => $token:expr, $($rest:tt)*}
     ) => {
-        $crate::__regexm_parse! {
+        $crate::__regexm! {
             tokens = [$($rest)*],
             str = $str,
             first_pattern = $pattern,
@@ -25,9 +14,9 @@ macro_rules! regexm_parse {
     };
 
     (
-        tokens = [let $var:tt = match $str:tt {$pattern:expr => $token:block $($rest:tt)*}],
+        let $var:tt = match $str:tt {$pattern:expr => $token:block $($rest:tt)*}
     ) => {
-        $crate::__regexm_parse! {
+        $crate::__regexm! {
             tokens = [$($rest)*],
             str = $str,
             first_pattern = $pattern,
@@ -39,9 +28,9 @@ macro_rules! regexm_parse {
 
     // match
     (
-        tokens = [match $str:tt {$pattern:expr => $token:expr, $($rest:tt)*}],
+        match $str:tt {$pattern:expr => $token:expr, $($rest:tt)*}
     ) => {
-        $crate::__regexm_parse! {
+        $crate::__regexm! {
             tokens = [$($rest)*],
             str = $str,
             first_pattern = $pattern,
@@ -51,9 +40,9 @@ macro_rules! regexm_parse {
     };
 
     (
-        tokens = [match $str:tt {$pattern:expr => $token:block $($rest:tt)*}],
+        match $str:tt {$pattern:expr => $token:block $($rest:tt)*}
     ) => {
-        $crate::__regexm_parse! {
+        $crate::__regexm! {
             tokens = [$($rest)*],
             str = $str,
             first_pattern = $pattern,
@@ -65,7 +54,7 @@ macro_rules! regexm_parse {
 
 #[macro_export]
 #[doc(hidden)]
-macro_rules! __regexm_parse {
+macro_rules! __regexm {
     (
         tokens = [_ => $default_token:expr$(,)?],
         str = $str:expr,
@@ -78,7 +67,7 @@ macro_rules! __regexm_parse {
     };
 
     (
-        tokens = [_ => $default_token:block],
+        tokens = [_ => $default_token:block$(,)?],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
         first_token = $first_tokens:expr,
@@ -102,7 +91,7 @@ macro_rules! __regexm_parse {
     };
 
     (
-        tokens = [_ => $default_token:block],
+        tokens = [_ => $default_token:block$(,)?],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
         first_token = $first_tokens:expr,
@@ -115,6 +104,28 @@ macro_rules! __regexm_parse {
     };
 
     (
+        tokens = [$pattern:expr => $token:block, $($rest:tt)*],
+        str = $str:expr,
+        first_pattern = $first_pattern:expr,
+        first_token = $first_tokens:expr,
+        var = $var:tt,
+        result = unknown,
+    ) => {
+        $crate::__regexm! {
+            tokens = [$($rest)*],
+            str = $str,
+            first_pattern = $first_pattern,
+            first_token = $first_tokens,
+            var = $var,
+            result = [if regex::Regex::new($first_pattern).unwrap().is_match($str) {
+                $first_tokens
+            } else if regex::Regex::new($pattern).unwrap().is_match($str) {
+                $token
+            }],
+        }
+    };
+
+    (
         tokens = [$pattern:expr => $token:block $($rest:tt)*],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
@@ -122,7 +133,7 @@ macro_rules! __regexm_parse {
         var = $var:tt,
         result = unknown,
     ) => {
-        $crate::__regexm_parse! {
+        $crate::__regexm! {
             tokens = [$($rest)*],
             str = $str,
             first_pattern = $first_pattern,
@@ -144,7 +155,7 @@ macro_rules! __regexm_parse {
         var = $var:tt,
         result = unknown,
     ) => {
-        $crate::__regexm_parse! {
+        $crate::__regexm! {
             tokens = [$($rest)*],
             str = $str,
             first_pattern = $first_pattern,
@@ -166,7 +177,27 @@ macro_rules! __regexm_parse {
         var = $var:tt,
         result = [$($result:tt)*],
     ) => {
-        $crate::__regexm_parse! {
+        $crate::__regexm! {
+            tokens = [$($rest)*],
+            str = $str,
+            first_pattern = $first_pattern,
+            first_token = $first_tokens,
+            var = $var,
+            result = [$($result)* else if regex::Regex::new($pattern).unwrap().is_match($str) {
+                $token
+            }],
+        }
+    };
+
+    (
+        tokens = [$pattern:expr => $token:block, $($rest:tt)*],
+        str = $str:expr,
+        first_pattern = $first_pattern:expr,
+        first_token = $first_tokens:expr,
+        var = $var:tt,
+        result = [$($result:tt)*],
+    ) => {
+        $crate::__regexm! {
             tokens = [$($rest)*],
             str = $str,
             first_pattern = $first_pattern,
@@ -186,7 +217,7 @@ macro_rules! __regexm_parse {
         var = $var:tt,
         result = [$($result:tt)*],
     ) => {
-        $crate::__regexm_parse! {
+        $crate::__regexm! {
             tokens = [$($rest)*],
             str = $str,
             first_pattern = $first_pattern,
@@ -209,7 +240,7 @@ macro_rules! __regexm_parse {
     };
 
     (
-        tokens = [_ => $default_token:block],
+        tokens = [_ => $default_token:block$(,)?],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
         first_token = $first_tokens:expr,
@@ -233,7 +264,7 @@ macro_rules! __regexm_parse {
     };
 
     (
-        tokens = [_ => $default_token:block],
+        tokens = [_ => $default_token:block$(,)?],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
         first_token = $first_tokens:expr,
@@ -253,7 +284,27 @@ macro_rules! __regexm_parse {
         first_token = $first_tokens:expr,
         result = unknown,
     ) => {
-        $crate::__regexm_parse! {
+        $crate::__regexm! {
+            tokens = [$($rest)*],
+            str = $str,
+            first_pattern = $first_pattern,
+            first_token = $first_tokens,
+            result = [if regex::Regex::new($first_pattern).unwrap().is_match($str) {
+                $first_tokens
+            } else if regex::Regex::new($pattern).unwrap().is_match($str) {
+                $token
+            }],
+        }
+    };
+
+    (
+        tokens = [$pattern:expr => $token:block, $($rest:tt)*],
+        str = $str:expr,
+        first_pattern = $first_pattern:expr,
+        first_token = $first_tokens:expr,
+        result = unknown,
+    ) => {
+        $crate::__regexm! {
             tokens = [$($rest)*],
             str = $str,
             first_pattern = $first_pattern,
@@ -273,7 +324,7 @@ macro_rules! __regexm_parse {
         first_token = $first_tokens:expr,
         result = unknown,
     ) => {
-        $crate::__regexm_parse! {
+        $crate::__regexm! {
             tokens = [$($rest)*],
             str = $str,
             first_pattern = $first_pattern,
@@ -293,7 +344,25 @@ macro_rules! __regexm_parse {
         first_token = $first_tokens:expr,
         result = [$($result:tt)*],
     ) => {
-        $crate::__regexm_parse! {
+        $crate::__regexm! {
+            tokens = [$($rest)*],
+            str = $str,
+            first_pattern = $first_pattern,
+            first_token = $first_tokens,
+            result = [$($result)* else if regex::Regex::new($pattern).unwrap().is_match($str) {
+                $token
+            }],
+        }
+    };
+
+    (
+        tokens = [$pattern:expr => $token:block, $($rest:tt)*],
+        str = $str:expr,
+        first_pattern = $first_pattern:expr,
+        first_token = $first_tokens:expr,
+        result = [$($result:tt)*],
+    ) => {
+        $crate::__regexm! {
             tokens = [$($rest)*],
             str = $str,
             first_pattern = $first_pattern,
@@ -311,7 +380,7 @@ macro_rules! __regexm_parse {
         first_token = $first_tokens:expr,
         result = [$($result:tt)*],
     ) => {
-        $crate::__regexm_parse! {
+        $crate::__regexm! {
             tokens = [$($rest)*],
             str = $str,
             first_pattern = $first_pattern,
@@ -337,6 +406,13 @@ mod test {
             r"^\d{4}-\d{2}-\d{2}$" => assert!(false),
             r"^\d{4}-\d{2}$" => assert!(false),
             _ => assert!(true),
+        });
+
+        regexm!(match "2021-01-01" {
+            r"^\d{4}-\d{2}-\d{2}$" => assert!(true),
+            r"^\d{4}-\d{2}$" => assert!(false),
+            r"^\d{4}$" => assert!(false),
+            _ => assert!(false),
         });
     }
 
@@ -369,6 +445,25 @@ mod test {
             _ => {
                 assert!(true);
                 assert!(true)
+            }
+        });
+
+        regexm!(match "2021-01-01" {
+            r"^\d{4}-\d{2}-\d{2}$" => {
+                assert!(true);
+                assert!(true);
+            }
+            r"^\d{4}-\d{2}$" => {
+                assert!(false);
+                assert!(false);
+            }
+            r"^\d{4}$" => {
+                assert!(false);
+                assert!(false);
+            }
+            _ => {
+                assert!(false);
+                assert!(false)
             }
         });
     }
@@ -426,6 +521,14 @@ mod test {
             _ => "default"
         });
         assert_eq!(foo, "default");
+
+        regexm!(let foo = match "2021-01-01" {
+            r"^\d{4}-\d{2}-\d{2}$" => "ymd",
+            r"^\d{4}-\d{2}$" => "ym",
+            r"^\d{4}$" => "y",
+            _ => "default"
+        });
+        assert_eq!(foo, "ymd");
     }
 
     #[test]
@@ -434,11 +537,11 @@ mod test {
             r"^\d{4}-\d{2}-\d{2}$" => {
                 let bar = "ymd";
                 bar
-            }
+            },
             r"^\d{4}-\d{2}$" => {
                 let bar = "ym";
                 bar
-            }
+            },
             _ => "default"
         });
         assert_eq!(foo, "ymd");
@@ -455,6 +558,23 @@ mod test {
             _ => "default"
         });
         assert_eq!(foo, "default");
+
+        regexm!(let foo = match "2021-01-01" {
+            r"^\d{4}-\d{2}-\d{2}$" => {
+                let bar = "ymd";
+                bar
+            },
+            r"^\d{4}-\d{2}$" => {
+                let bar = "ym";
+                bar
+            }
+            r"^\d{4}$" => {
+                let bar = "y";
+                bar
+            },
+            _ => "default"
+        });
+        assert_eq!(foo, "ymd");
     }
 
     #[test]
