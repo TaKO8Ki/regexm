@@ -11,6 +11,8 @@ fn main() {
         _ => println!("default"),
     });
 
+    // Output: y-m-d
+
     let text2 = "foo";
     let foo = regexm::regexm!(match text2 {
         r"^\d{4}-\d{2}-\d{2}$" => "ymd",
@@ -23,4 +25,6 @@ fn main() {
         _ => "default",
     });
     println!("{}", foo);
+
+    // Output: default
 }
