@@ -29,7 +29,7 @@ macro_rules! regexm {
 #[doc(hidden)]
 macro_rules! __regexm {
     (
-        tokens = [_ => $default_token:expr$(,)?],
+        tokens = [$default:pat => $default_token:expr$(,)?],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
         first_token = $first_tokens:expr,
@@ -39,7 +39,7 @@ macro_rules! __regexm {
     };
 
     (
-        tokens = [_ => $default_token:block$(,)?],
+        tokens = [$default:pat => $default_token:block$(,)?],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
         first_token = $first_tokens:expr,
@@ -49,7 +49,17 @@ macro_rules! __regexm {
     };
 
     (
-        tokens = [_ => $default_token:expr$(,)?],
+        tokens = [],
+        str = $str:expr,
+        first_pattern = $first_pattern:expr,
+        first_token = $first_tokens:expr,
+        result = [$($result:tt)*],
+    ) => {
+        $($result)*
+    };
+
+    (
+        tokens = [$default:pat => $default_token:expr$(,)?],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
         first_token = $first_tokens:expr,
@@ -61,7 +71,7 @@ macro_rules! __regexm {
     };
 
     (
-        tokens = [_ => $default_token:block$(,)?],
+        tokens = [$default:pat => $default_token:block$(,)?],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
         first_token = $first_tokens:expr,
