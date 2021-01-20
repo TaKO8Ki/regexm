@@ -20,7 +20,7 @@ fn main() {
             let ymd = "ymd";
             ymd
         }
-        _ => "default"
+        _ => "default",
     });
     println!("{}", foo);
 }
