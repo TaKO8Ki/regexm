@@ -15,7 +15,7 @@
 ```toml
 [dependencies]
 regex = "1"
-regexm = "0.1-beta"
+regexm = "0.1"
 ```
 
 ## Usage
