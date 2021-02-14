@@ -1,25 +1,25 @@
 #[macro_export]
 macro_rules! regexm {
     (
-        match $str:tt {$pattern:expr => $token:expr, $($rest:tt)*}
+        match $str:tt {$pattern:expr => $expr:expr, $($rest:tt)*}
     ) => {
         $crate::__regexm! {
             tokens = [$($rest)*],
             str = $str,
             first_pattern = $pattern,
-            first_token = $token,
+            first_expr = $expr,
             result = unknown,
         }
     };
 
     (
-        match $str:tt {$pattern:expr => $token:block $($rest:tt)*}
+        match $str:tt {$pattern:expr => $expr:block $($rest:tt)*}
     ) => {
         $crate::__regexm! {
             tokens = [$($rest)*],
             str = $str,
             first_pattern = $pattern,
-            first_token = $token,
+            first_expr = $expr,
             result = unknown,
         }
     };
@@ -29,37 +29,49 @@ macro_rules! regexm {
 #[doc(hidden)]
 macro_rules! __regexm {
     (
-        tokens = [$default:pat => $default_token:expr$(,)?],
+        tokens = [$default:pat => $default_expr:expr$(,)?],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
-        first_token = $first_tokens:expr,
+        first_expr = $first_expr:expr,
         result = [$($result:tt)*],
     ) => {
-        $($result)* else {$default_token};
+        $($result)* else {$default_expr};
     };
 
     (
-        tokens = [$default:pat => $default_token:block$(,)?],
+        tokens = [$default:pat => $default_expr:block$(,)?],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
-        first_token = $first_tokens:expr,
+        first_expr = $first_expr:expr,
         result = [$($result:tt)*],
     ) => {
-        $($result)* else {$default_token};
+        $($result)* else {$default_expr};
     };
 
     (
         tokens = [],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
-        first_token = $first_tokens:expr,
+        first_expr = $first_expr:expr,
         result = [$($result:tt)*],
     ) => {
         $($result)*
     };
 
     (
-        tokens = [$default:pat => $default_token:expr$(,)?],
+        tokens = [$default:pat => $default_expr:expr$(,)?],
+        str = $str:expr,
+        first_pattern = $first_pattern:expr,
+        first_expr = $first_expr:expr,
+        result = unknown,
+    ) => {
+        if regex::Regex::new($first_pattern).unwrap().is_match($str) {
+            $first_expr
+        } else {$default_expr};
+    };
+
+    (
+        tokens = [$default:pat => $default_expr:block$(,)?],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
         first_token = $first_tokens:expr,
@@ -67,131 +79,119 @@ macro_rules! __regexm {
     ) => {
         if regex::Regex::new($first_pattern).unwrap().is_match($str) {
             $first_tokens
-        } else {$default_token};
+        } else {$default_expr};
     };
 
     (
-        tokens = [$default:pat => $default_token:block$(,)?],
+        tokens = [$pattern:expr => $expr:block, $($rest:tt)*],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
-        first_token = $first_tokens:expr,
-        result = unknown,
-    ) => {
-        if regex::Regex::new($first_pattern).unwrap().is_match($str) {
-            $first_tokens
-        } else {$default_token};
-    };
-
-    (
-        tokens = [$pattern:expr => $token:block, $($rest:tt)*],
-        str = $str:expr,
-        first_pattern = $first_pattern:expr,
-        first_token = $first_tokens:expr,
+        first_expr = $first_expr:expr,
         result = unknown,
     ) => {
         $crate::__regexm! {
             tokens = [$($rest)*],
             str = $str,
             first_pattern = $first_pattern,
-            first_token = $first_tokens,
+            first_expr = $first_expr,
             result = [if regex::Regex::new($first_pattern).unwrap().is_match($str) {
                 $first_tokens
             } else if regex::Regex::new($pattern).unwrap().is_match($str) {
-                $token
+                $expr
             }],
         }
     };
 
     (
-        tokens = [$pattern:expr => $token:block $($rest:tt)*],
+        tokens = [$pattern:expr => $expr:block $($rest:tt)*],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
-        first_token = $first_tokens:expr,
+        first_expr = $first_expr:expr,
         result = unknown,
     ) => {
         $crate::__regexm! {
             tokens = [$($rest)*],
             str = $str,
             first_pattern = $first_pattern,
-            first_token = $first_tokens,
+            first_expr = $first_expr,
             result = [if regex::Regex::new($first_pattern).unwrap().is_match($str) {
-                $first_tokens
+                $first_expr
             } else if regex::Regex::new($pattern).unwrap().is_match($str) {
-                $token
+                $expr
             }],
         }
     };
 
     (
-        tokens = [$pattern:expr => $token:expr, $($rest:tt)*],
+        tokens = [$pattern:expr => $expr:expr, $($rest:tt)*],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
-        first_token = $first_tokens:expr,
+        first_expr = $first_expr:expr,
         result = unknown,
     ) => {
         $crate::__regexm! {
             tokens = [$($rest)*],
             str = $str,
             first_pattern = $first_pattern,
-            first_token = $first_tokens,
+            first_expr = $first_expr,
             result = [if regex::Regex::new($first_pattern).unwrap().is_match($str) {
-                $first_tokens
+                $first_expr
             } else if regex::Regex::new($pattern).unwrap().is_match($str) {
-                $token
+                $expr
             }],
         }
     };
 
     (
-        tokens = [$pattern:expr => $token:expr, $($rest:tt)*],
+        tokens = [$pattern:expr => $expr:expr, $($rest:tt)*],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
-        first_token = $first_tokens:expr,
+        first_expr = $first_expr:expr,
         result = [$($result:tt)*],
     ) => {
         $crate::__regexm! {
             tokens = [$($rest)*],
             str = $str,
             first_pattern = $first_pattern,
-            first_token = $first_tokens,
+            first_expr = $first_expr,
             result = [$($result)* else if regex::Regex::new($pattern).unwrap().is_match($str) {
-                $token
+                $expr
             }],
         }
     };
 
     (
-        tokens = [$pattern:expr => $token:block, $($rest:tt)*],
+        tokens = [$pattern:expr => $expr:block, $($rest:tt)*],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
-        first_token = $first_tokens:expr,
+        first_expr = $first_expr:expr,
         result = [$($result:tt)*],
     ) => {
         $crate::__regexm! {
             tokens = [$($rest)*],
             str = $str,
             first_pattern = $first_pattern,
-            first_token = $first_tokens,
+            first_expr = $first_expr,
             result = [$($result)* else if regex::Regex::new($pattern).unwrap().is_match($str) {
-                $token
+                $expr
             }],
         }
     };
 
     (
-        tokens = [$pattern:expr => $token:block $($rest:tt)*],
+        tokens = [$pattern:expr => $expr:block $($rest:tt)*],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
-        first_token = $first_tokens:expr,
+        first_expr = $first_expr:expr,
         result = [$($result:tt)*],
     ) => {
         $crate::__regexm! {
             tokens = [$($rest)*],
             str = $str,
             first_pattern = $first_pattern,
-            first_token = $first_tokens,
+            first_expr = $first_expr,
             result = [$($result)* else if regex::Regex::new($pattern).unwrap().is_match($str) {
-                $token
+                $expr
             }],
         }
     };
