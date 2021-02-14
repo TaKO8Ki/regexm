@@ -22,7 +22,7 @@ regex = "1"
 regexm = "0.1"
 ```
 
-If you want to use `Capture groups` feature, please use `regexm = "0.2-beta"`.
+If you want to use `Capture groups` feature, please use `regexm = "0.2.0-beta"`.
 
 ## Usage
 
