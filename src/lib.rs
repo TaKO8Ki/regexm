@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! regexm {
     (
-        match $str:tt {$pattern:expr => |$caps:ident| $expr:expr, $($rest:tt)*}
+        match $str:tt {captures($pattern:expr) => |$caps:ident| $expr:expr, $($rest:tt)*}
     ) => {
         $crate::__regexm! {
             tokens = [$($rest)*],
@@ -16,7 +16,7 @@ macro_rules! regexm {
     };
 
     (
-        match $str:tt {$pattern:expr => |$caps:ident| $expr:block $($rest:tt)*}
+        match $str:tt {captures($pattern:expr) => |$caps:ident| $expr:block $($rest:tt)*}
     ) => {
         $crate::__regexm! {
             tokens = [$($rest)*],
@@ -59,7 +59,7 @@ macro_rules! regexm {
 #[doc(hidden)]
 macro_rules! __regexm {
     (
-        tokens = [$default:pat => |$caps:ident| $default_expr:expr$(,)?],
+        tokens = [captures($default:pat) => |$caps:ident| $default_expr:expr$(,)?],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
         first_expr = $first_expr:expr,
@@ -72,7 +72,7 @@ macro_rules! __regexm {
     };
 
     (
-        tokens = [$default:pat => |$caps:ident| $default_expr:block$(,)?],
+        tokens = [captures($default:pat) => |$caps:ident| $default_expr:block$(,)?],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
         first_expr = $first_expr:expr,
@@ -115,7 +115,7 @@ macro_rules! __regexm {
     };
 
     (
-        tokens = [$default:pat => |$caps:ident| $default_expr:expr$(,)?],
+        tokens = [captures($default:pat) => |$caps:ident| $default_expr:expr$(,)?],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
         first_expr = $first_expr:expr,
@@ -130,7 +130,7 @@ macro_rules! __regexm {
     };
 
     (
-        tokens = [$default:pat => |$caps:ident| $default_expr:block$(,)?],
+        tokens = [captures($default:pat) => |$caps:ident| $default_expr:block$(,)?],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
         first_expr = $first_expr:expr,
@@ -169,7 +169,7 @@ macro_rules! __regexm {
     };
 
     (
-        tokens = [$pattern:expr => |$caps:ident| $expr:expr, $($rest:tt)*],
+        tokens = [captures($pattern:expr) => |$caps:ident| $expr:expr, $($rest:tt)*],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
         first_expr = $first_expr:expr,
@@ -190,7 +190,7 @@ macro_rules! __regexm {
     };
 
     (
-        tokens = [$pattern:expr => |$caps:ident| $expr:block $($rest:tt)*],
+        tokens = [captures($pattern:expr) => |$caps:ident| $expr:block $($rest:tt)*],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
         first_expr = $first_expr:expr,
@@ -251,7 +251,7 @@ macro_rules! __regexm {
     };
 
     (
-        tokens = [$pattern:expr => |$caps:ident| $expr:expr, $($rest:tt)*],
+        tokens = [captures($pattern:expr) => |$caps:ident| $expr:expr, $($rest:tt)*],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
         first_expr = $first_expr:expr,
@@ -270,7 +270,7 @@ macro_rules! __regexm {
     };
 
     (
-        tokens = [$pattern:expr => |$caps:ident| $expr:block $($rest:tt)*],
+        tokens = [captures($pattern:expr) => |$caps:ident| $expr:block $($rest:tt)*],
         str = $str:expr,
         first_pattern = $first_pattern:expr,
         first_expr = $first_expr:expr,
@@ -549,7 +549,7 @@ mod test {
     #[test]
     fn test_capture_groups_match_3_or_more_pattern() {
         regexm!(match "2021-01-01" {
-            r"^(\d{4})-\d{2}-\d{2}$" =>
+            captures(r"^(\d{4})-\d{2}-\d{2}$") =>
                 |caps| assert_eq!(caps.get(1).map_or("", |m| m.as_str()), "2021"),
             r"^\d{4}-\d{2}$" => assert!(false),
             _ => assert!(false),
@@ -557,7 +557,8 @@ mod test {
 
         regexm!(match "2021-01" {
             r"^\d{4}-\d{2}-\d{2}$" => assert!(false),
-            r"^(\d{4})-\d{2}$" => |caps| assert_eq!(caps.get(1).map_or("", |m| m.as_str()), "2021"),
+            captures(r"^(\d{4})-\d{2}$") =>
+                |caps| assert_eq!(caps.get(1).map_or("", |m| m.as_str()), "2021"),
             r"^\d{4}$" => assert!(false),
             _ => assert!(false),
         });
@@ -566,7 +567,7 @@ mod test {
     #[test]
     fn test_capture_groups_match_3_or_more_pattern_block() {
         regexm!(match "2021-01-01" {
-            r"^(\d{4})-\d{2}-\d{2}$" => |caps| {
+            captures(r"^(\d{4})-\d{2}-\d{2}$") => |caps| {
                 let year = caps.get(1).map_or("", |m| m.as_str());
                 assert_eq!(year, "2021")
             }
@@ -585,7 +586,7 @@ mod test {
                 assert!(false);
                 assert!(false);
             }
-            r"^(\d{4})-\d{2}$" => |caps| {
+            captures(r"^(\d{4})-\d{2}$") => |caps| {
                 let month = caps.get(1).map_or("", |m| m.as_str());
                 assert_eq!(month, "2021")
             }
@@ -603,7 +604,7 @@ mod test {
     #[test]
     fn test_capture_groups_match_2_or_less_pattern() {
         regexm!(match "2021-01-01" {
-            r"^(\d{4})-\d{2}-\d{2}$" =>
+            captures(r"^(\d{4})-\d{2}-\d{2}$") =>
                 |caps| assert_eq!(caps.get(1).map_or("", |m| m.as_str()), "2021"),
             _ => assert!(false),
         });
@@ -617,7 +618,7 @@ mod test {
     #[test]
     fn test_capture_groups_match_2_or_less_pattern_block() {
         regexm!(match "2021-01-01" {
-            r"^(\d{4})-\d{2}-\d{2}$" => |caps| {
+            captures(r"^(\d{4})-\d{2}-\d{2}$") => |caps| {
                 let year = caps.get(1).map_or("", |m| m.as_str());
                 assert_eq!(year, "2021");
             }
