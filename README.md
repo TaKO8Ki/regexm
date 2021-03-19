@@ -19,10 +19,8 @@
 ```toml
 [dependencies]
 regex = "1"
-regexm = "0.1"
+regexm = "0.2"
 ```
-
-If you want to use `Capture groups` feature, please use `regexm = "0.2.0-beta"`.
 
 ## Usage
 
