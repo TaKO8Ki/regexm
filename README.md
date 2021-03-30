@@ -19,7 +19,7 @@
 ```toml
 [dependencies]
 regex = "1"
-regexm = "0.2"
+regexm = "0.2.1"
 ```
 
 ## Usage
